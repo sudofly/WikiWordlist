@@ -17,12 +17,12 @@ if wget -q --show-progress http://wikimedia.bytemark.co.uk/enwiki/$today/enwiki-
 		echo  "downloaded enwiki-$today-pages-articles.xml.bz2"
 	else
 		echo "there is no file for $today. append the date from wikimedia.bytemark.co.uk/enwiki/ to the script to download an alternative"
-	#exit 1
+	exit 1
 fi
 
 echo unzipping downloaded file 
-bzip2 -d enwiki-20190101-pages-articles1.xml-p10p30302.bz2
-#bzip2 -d enwiki-$today-pages-articles.xml.bz2
+#zip2 -d enwiki-20190101-pages-articles.xml.bz2
+bzip2 -d enwiki-$today-pages-articles.xml.bz2
 XMLFILE=$(ls enwiki*)
 
 echo "Splitting File "$XMLFILE" ...."
