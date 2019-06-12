@@ -1,6 +1,8 @@
 #!/bin/bash
 
 DATEFILE=$(date +%Y%m%d)
+RED='\033[0;31m'
+NC='\033[0m' # No Color
 
 #location of the prep folder
 cd /mnt/s/Wordlists/prep
@@ -35,12 +37,11 @@ if [ ! -d wikitmp ]; then
 fi
 
 split -l 300000 $XMLFILE wikitmp/wiki_
-echo ""
 
 cd wikitmp
 
 echo making all spaces into linefeeds
-/usr/bin/time --format=' \n---- \nelapsed time is %e' perl -pi -e 's/\s+/\n/g' wiki_*
+/usr/bin/time --format=' \n---- \nelapsed time is %E' perl -pi -e 's/\s+/\n/g' wiki_*
 
 #echo "Removing words with a digit"
 #/usr/bin/time --format=' \n---- \nelapsed time is %e' perl -pi -e 's/\S*\d+\S*//g' wiki_*
@@ -51,36 +52,38 @@ echo "Removing non Alpha Characters"
 #might want to remove all characters 
 #perl -pi -e 's/[\W_$\[\]]+/\n/g' wiki_*
 #this removes the whole word including the digit
-/usr/bin/time --format=' \n---- \nelapsed time is %e' perl -pi -e 's/\w*([^\w\s]|\d)+\w* ?//g' wiki_*
+/usr/bin/time --format=' \n---- \nelapsed time is %E' perl -pi -e 's/\w*([^\w\s]|\d)+\w* ?//g' wiki_*
 echo ""
 
 echo "Removing long words"
-/usr/bin/time --format=' \n---- \nelapsed time is %e' perl -pi -e 's/.{31,}//g' wiki_*
-echo ""
+/usr/bin/time --format=' \n---- \nelapsed time is %E' perl -pi -e 's/.{31,}//g' wiki_*
 
 echo "Mutating UC to LC"
-/usr/bin/time --format=' \n---- \nelapsed time is %e' perl -pi -e 'tr/A-Z/a-z/' wiki_*
-echo ""
+/usr/bin/time --format=' \n---- \nelapsed time is %E' perl -pi -e 'tr/A-Z/a-z/' wiki_*
+
+echo "Removing words with underscores"
+/usr/bin/time --format=' \n---- \nelapsed time is %E' perl -pi -e 's/\w*_\w*//g'  wiki_*
 
 echo "Removing words less than 3 characters long"
-/usr/bin/time --format=' \n---- \nelapsed time is %e' perl -pi -e 's/\b.{1,3}\b//g' wiki_*
-echo ""
-
-
+/usr/bin/time --format=' \n---- \nelapsed time is %E' perl -pi -e 's/\b.{1,3}\b//g' wiki_*
 
 echo "Removing words without vowels"
-/usr/bin/time --format=' \n---- \nelapsed time is %e' perl -pi -e "s/\b[^aeiouy]*\b//g" wiki_*
-echo ""
+/usr/bin/time --format=' \n---- \nelapsed time is %E' perl -pi -e "s/\b[^aeiouy]*\b//g" wiki_*
 
 echo "Removing words with more than two consecutive letters"
-
+/usr/bin/time --format=' \n---- \nelapsed time is %E' perl -pi -e 's/\w*(.)\1{2}\w*//g' wiki_*
 
 
 echo "Merging wordlist out 2x directories"
+currentcount=$(wc -l ../../wikiwordlist.lst | cut -d' ' -f1)
+echo $currentcount
 sort -u -S 30% wiki_* > wikiwordlist.lst
 sort -u wikiwordlist.lst ../../wikiwordlist.lst -o ../../wikiwordlist.lst
+newcount=$(wc -l ../../wikiwordlist.lst | cut -d' ' -f1)
 cd ..
 echo ""
+echo $newcount
+echo "New words added = "$((newcount-currentcount))
 
 echo "Cleaning temporary file"
 rm -rf wikitmp
